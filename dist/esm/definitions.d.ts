@@ -2,7 +2,7 @@ export interface SDKInfo {
     sdkVersion: string;
     appName: string;
     appVersion: string;
-    forcePluginsAvailable: Array<string>;
+    forcePluginsAvailable: string[];
     bootConfig: string;
 }
 export interface SDKInfoPlugin {
