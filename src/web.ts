@@ -6,11 +6,6 @@ export class SDKInfoPluginWeb
 extends WebPlugin
 implements SDKInfoPlugin
 {
-    async echo(options: { value: string }): Promise<{ value: string }> {
-	console.log('ECHO', options);
-	return options;
-    }
-
     async getSDKInfo(): Promise<SDKInfo> {
 	console.log("Called getSDKInfo");
 	return new Promise((resolve, reject) => {
@@ -18,23 +13,23 @@ implements SDKInfoPlugin
 		sdkVersion: "Sdk-Version",
 		appName: "App-Name",
 		appVersion: "1.0.0",
-		forcePluginsAvailable: []
+		forcePluginsAvailable: [],
 		bootConfig: ""
 	    });
+	});
     }
     
     async unregisterAppFeature(options: { feature: string }): Promise<void> {
 	console.log("Called unregisterAppFeature");
 	return new Promise((resolve, reject) => {
 	    resolve();
-	})
+	});
     }	
 
     async registerAppFeature(options: { feature: string }): Promise<void> {
 	console.log("Called registerAppFeature");
 	return new Promise((resolve, reject) => {
 	    resolve();
-	})
+	});
     }
-
 }
