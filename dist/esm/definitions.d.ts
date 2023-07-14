@@ -6,7 +6,7 @@ export interface SDKInfo {
     bootConfig: string;
 }
 export interface SDKInfoPlugin {
-    getSDKInfo(): Promise<SDKInfo>;
+    getInfo(): Promise<SDKInfo>;
     unregisterAppFeature(options: {
         feature: string;
     }): Promise<void>;

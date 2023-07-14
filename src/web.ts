@@ -6,8 +6,8 @@ export class SDKInfoPluginWeb
 extends WebPlugin
 implements SDKInfoPlugin
 {
-    async getSDKInfo(): Promise<SDKInfo> {
-	console.log("Called getSDKInfo");
+    async getInfo(): Promise<SDKInfo> {
+	console.log("Called getInfo");
 	return new Promise((resolve) => {
 	    resolve({
 		sdkVersion: "Sdk-Version",

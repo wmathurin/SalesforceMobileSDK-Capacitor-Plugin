@@ -7,7 +7,7 @@ export interface SDKInfo {
 }
 
 export interface SDKInfoPlugin {
-  getSDKInfo(): Promise<SDKInfo>;
+  getInfo(): Promise<SDKInfo>;
   unregisterAppFeature(options: { feature: string }): Promise<void>;
   registerAppFeature(options: { feature: string }): Promise<void>;  
 }

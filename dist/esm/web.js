@@ -1,7 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 export class SDKInfoPluginWeb extends WebPlugin {
-    async getSDKInfo() {
-        console.log("Called getSDKInfo");
+    async getInfo() {
+        console.log("Called getInfo");
         return new Promise((resolve) => {
             resolve({
                 sdkVersion: "Sdk-Version",

@@ -5,11 +5,11 @@ import SalesforceSDKCore
 @objc (SDKInfoPlugin)
 public class SDKInfoPlugin: CAPPlugin {
     
-    @objc func getInfo(_ call: CAPPluginCall) {
+    @objc public func getInfo(_ call: CAPPluginCall) {
         call.resolve(SDKInfo.getSDKInfo().dictionary)
     }
     
-    @objc func registerAppFeature(_ call: CAPPluginCall) {
+    @objc public func registerAppFeature(_ call: CAPPluginCall) {
         let appFeatureCode = call.getString("feature") ?? ""
         if (!appFeatureCode.isEmpty) {
             SFSDKAppFeatureMarkers.registerAppFeature(appFeatureCode)
@@ -17,7 +17,7 @@ public class SDKInfoPlugin: CAPPlugin {
         call.resolve()
     }
 
-    @objc func unregisterAppFeature(_ call: CAPPluginCall) {
+    @objc public func unregisterAppFeature(_ call: CAPPluginCall) {
         let appFeatureCode = call.getString("feature") ?? ""
         if (!appFeatureCode.isEmpty) {
             SFSDKAppFeatureMarkers.unregisterAppFeature(appFeatureCode)
