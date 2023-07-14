@@ -5,7 +5,7 @@ import type { SDKInfoPlugin } from './definitions';
 const registeredPlugin  = registerPlugin<SDKInfoPlugin>(
   'SDKInfoPlugin',
   {
-    web: () => import('./web').then(m => new m.CapacitorPluginWeb()),
+    web: () => import('./web').then(m => new m.SDKInfoPluginWeb()),
   },
 );
 

@@ -2,7 +2,7 @@ import { WebPlugin } from '@capacitor/core';
 export class SDKInfoPluginWeb extends WebPlugin {
     async getSDKInfo() {
         console.log("Called getSDKInfo");
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             resolve({
                 sdkVersion: "Sdk-Version",
                 appName: "App-Name",
@@ -13,14 +13,14 @@ export class SDKInfoPluginWeb extends WebPlugin {
         });
     }
     async unregisterAppFeature(options) {
-        console.log("Called unregisterAppFeature");
-        return new Promise((resolve, reject) => {
+        console.log(`Called unregisterAppFeature ${options.feature}`);
+        return new Promise((resolve) => {
             resolve();
         });
     }
     async registerAppFeature(options) {
-        console.log("Called registerAppFeature");
-        return new Promise((resolve, reject) => {
+        console.log(`Called registerAppFeature ${options.feature}`);
+        return new Promise((resolve) => {
             resolve();
         });
     }

@@ -8,7 +8,7 @@ implements SDKInfoPlugin
 {
     async getSDKInfo(): Promise<SDKInfo> {
 	console.log("Called getSDKInfo");
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 	    resolve({
 		sdkVersion: "Sdk-Version",
 		appName: "App-Name",
@@ -20,15 +20,15 @@ implements SDKInfoPlugin
     }
     
     async unregisterAppFeature(options: { feature: string }): Promise<void> {
-	console.log("Called unregisterAppFeature");
-	return new Promise((resolve, reject) => {
+	console.log(`Called unregisterAppFeature ${options.feature}`);
+	return new Promise((resolve) => {
 	    resolve();
 	});
     }	
 
     async registerAppFeature(options: { feature: string }): Promise<void> {
-	console.log("Called registerAppFeature");
-	return new Promise((resolve, reject) => {
+	console.log(`Called registerAppFeature ${options.feature}`);
+	return new Promise((resolve) => {
 	    resolve();
 	});
     }
