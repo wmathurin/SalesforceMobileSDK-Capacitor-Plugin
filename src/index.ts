@@ -1,13 +1,13 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { CapacitorPluginPlugin } from './definitions';
+import type { SDKInfoPlugin } from './definitions';
 
-const CapacitorPlugin = registerPlugin<CapacitorPluginPlugin>(
-  'CapacitorPlugin',
+const registeredPlugin  = registerPlugin<SDKInfoPlugin>(
+  'SDKInfoPlugin',
   {
     web: () => import('./web').then(m => new m.CapacitorPluginWeb()),
   },
 );
 
 export * from './definitions';
-export { CapacitorPlugin };
+export { registeredPlugin as SDKInfoPlugin };
