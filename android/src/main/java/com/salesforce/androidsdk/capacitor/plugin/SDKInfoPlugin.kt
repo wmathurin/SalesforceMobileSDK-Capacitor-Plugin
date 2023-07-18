@@ -34,9 +34,6 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.salesforce.androidsdk.app.SalesforceSDKManager
 import com.salesforce.androidsdk.capacitor.util.SalesforceHybridLogger
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @CapacitorPlugin(name = "SDKInfoPlugin")
 class SDKInfoPlugin : Plugin() {
@@ -73,16 +70,21 @@ class SDKInfoPlugin : Plugin() {
     }
 }
 
-@Serializable
 internal data class SDKInfo (
     val sdkVersion: String,
-    val appName:String,
+    val appName: String,
     val appVersion: String,
     val forcePluginsAvailable: List<String>,
     val bootConfig: String,
 ) {
 
-    fun toJSObject(): JSObject = JSObject(Json.encodeToString(this))
+    fun toJSObject(): JSObject {
+        return JSObject().apply {
+            put("sdkVersion", sdkVersion)
+            put("appName", appName)
+            put("appVersion", appVersion)
+        }
+    }
 
     companion object {
         fun getSDKInfo(ctx: Context): SDKInfo {
