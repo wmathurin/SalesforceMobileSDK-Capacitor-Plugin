@@ -281,7 +281,7 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
      */
     fun authenticate(/*callbackContext: CallbackContext?*/) {
         i(TAG, "authenticate called")
-        clientManager!!.getRestClient(
+        clientManager.getRestClient(
             this
         ) { client ->
             if (client == null) {
@@ -403,10 +403,10 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
      * Load local start page
      */
     fun loadLocalStartPage() {
-        assert(bootconfig.isLocal)
-        val startPage = bootconfig.startPage
         i(TAG, "loadLocalStartPage called - loading!")
-//        loadUrl("file:///android_asset/www/$startPage")
+        assert(bootconfig.isLocal)
+        val url = "${bridge.config.androidScheme}://${bridge.config.hostname}/${bootconfig.startPage}"
+        bridge.webView.loadUrl(url)
         webAppLoaded = true
     }
 
@@ -473,9 +473,8 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
      * Load error page
      */
     fun loadErrorPage() {
-        val errorPage = bootconfig.errorPage
-        i(TAG, "getErrorPageUrl called - local error page: $errorPage")
-//        loadUrl("file:///android_asset/www/$errorPage")
+        i(TAG, "loadErrorPage called")
+        bridge.webView.loadUrl(bootconfig.errorPage)
     }
 
     override fun onLogoutComplete() {}
