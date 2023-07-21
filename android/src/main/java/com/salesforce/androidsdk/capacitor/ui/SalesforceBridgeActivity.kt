@@ -44,11 +44,12 @@ import com.salesforce.androidsdk.rest.RestClient
 import com.salesforce.androidsdk.rest.RestClient.AsyncRequestCallback
 import com.salesforce.androidsdk.rest.RestRequest
 import com.salesforce.androidsdk.rest.RestRequest.RestMethod
+import com.salesforce.androidsdk.rest.RestRequest.UTF_8
 import com.salesforce.androidsdk.rest.RestResponse
 import com.salesforce.androidsdk.ui.SalesforceActivityDelegate
 import com.salesforce.androidsdk.ui.SalesforceActivityInterface
 import com.salesforce.androidsdk.util.AuthConfigUtil.MyDomainAuthConfig
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import java.net.URLEncoder
 
 
 class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
@@ -379,8 +380,9 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
                         try {
                             this@SalesforceBridgeActivity.client =
                                 this@SalesforceBridgeActivity.clientManager.peekRestClient()
-                            val frontDoorUrl = getFrontDoorUrl(url, BootConfig.isAbsoluteUrl(url))
-//                            loadUrl(frontDoorUrl)
+                            if (url != null) {
+                                loadRemoteStartPage(url, true)
+                            }
                         } catch (e: AccountInfoNotFoundException) {
                             i(TAG, "User has been logged out.")
                             logout(/*null*/)
@@ -411,25 +413,15 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
     }
 
     /**
-     * Load remote start page (front-doored)
-     */
-    fun loadRemoteStartPage() {
-        loadRemoteStartPage(bootconfig.startPage, true)
-    }
-
-    /**
      * Load the remote start page.
      * @param startPageUrl The start page to load.
      * @param loadThroughFrontDoor Whether or not to load through front-door.
      */
     private fun loadRemoteStartPage(startPageUrl: String, loadThroughFrontDoor: Boolean) {
-        assert(!bootconfig.isLocal)
-        var url = startPageUrl
-        if (loadThroughFrontDoor) {
-            url = getFrontDoorUrl(url, BootConfig.isAbsoluteUrl(url))
-        }
         i(TAG, "loadRemoteStartPage called - loading!")
-//        loadUrl(url)
+        assert(!bootconfig.isLocal)
+        val url = if (loadThroughFrontDoor) getFrontDoorUrl(startPageUrl) else startPageUrl
+        bridge.webView.loadUrl(url)
         webAppLoaded = true
     }
 
@@ -437,10 +429,9 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
      * Returns the front-doored URL of a URL passed in.
      *
      * @param url      URL to be front-doored.
-     * @param isAbsUrl True - if the URL should be used as is, False - otherwise.
      * @return Front-doored URL.
      */
-    fun getFrontDoorUrl(url: String?, isAbsUrl: Boolean): String {
+    fun getFrontDoorUrl(url: String?): String {
 
         /*
          * We need to use the absolute URL in some cases and relative URL in some
@@ -448,16 +439,14 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
          * URL. Community URL can be custom and the logic of determining which
          * URL to use is in the 'resolveUrl' method in 'ClientInfo'.
          */
-        var url = url
-        url = if (isAbsUrl) url else client!!.clientInfo.resolveUrl(url).toString()
-        val frontDoorUrl = (client!!.clientInfo.instanceUrlAsString
-                + "/secur/frontdoor.jsp?"
-                ).toHttpUrlOrNull()!!.newBuilder()
-            .addQueryParameter("sid", client!!.authToken)
-            .addQueryParameter("retURL", url)
-            .addQueryParameter("display", "touch")
-            .build()
-        return frontDoorUrl.toString()
+        val clientInfo = client!!.clientInfo
+        val authToken = client!!.authToken
+        val isAbsUrl = BootConfig.isAbsoluteUrl(url)
+        val retURL = if (isAbsUrl) url else clientInfo.resolveUrl(url).toString()
+        return clientInfo.resolveUrl("/secur/frontdoor.jsp").toString()
+            .plus("?sid=${URLEncoder.encode(authToken, UTF_8)}")
+            .plus("&retURL=${URLEncoder.encode(retURL, UTF_8)}")
+            .plus("&display=touch")
     }
 
     /**
