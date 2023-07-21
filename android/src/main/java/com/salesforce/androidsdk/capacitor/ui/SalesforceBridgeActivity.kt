@@ -32,6 +32,7 @@ import android.view.KeyEvent
 import com.getcapacitor.BridgeActivity
 import com.salesforce.androidsdk.app.SalesforceSDKManager
 import com.salesforce.androidsdk.auth.HttpAccess.NoNetworkException
+import com.salesforce.androidsdk.auth.OAuth2
 import com.salesforce.androidsdk.capacitor.app.SalesforceHybridSDKManager
 import com.salesforce.androidsdk.capacitor.util.SalesforceHybridLogger.i
 import com.salesforce.androidsdk.capacitor.util.SalesforceHybridLogger.w
@@ -44,12 +45,11 @@ import com.salesforce.androidsdk.rest.RestClient
 import com.salesforce.androidsdk.rest.RestClient.AsyncRequestCallback
 import com.salesforce.androidsdk.rest.RestRequest
 import com.salesforce.androidsdk.rest.RestRequest.RestMethod
-import com.salesforce.androidsdk.rest.RestRequest.UTF_8
 import com.salesforce.androidsdk.rest.RestResponse
 import com.salesforce.androidsdk.ui.SalesforceActivityDelegate
 import com.salesforce.androidsdk.ui.SalesforceActivityInterface
 import com.salesforce.androidsdk.util.AuthConfigUtil.MyDomainAuthConfig
-import java.net.URLEncoder
+import java.net.URI
 
 
 class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
@@ -420,9 +420,26 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
     private fun loadRemoteStartPage(startPageUrl: String, loadThroughFrontDoor: Boolean) {
         i(TAG, "loadRemoteStartPage called - loading!")
         assert(!bootconfig.isLocal)
-        val url = if (loadThroughFrontDoor) getFrontDoorUrl(startPageUrl) else startPageUrl
-        bridge.webView.loadUrl(url)
-        webAppLoaded = true
+        val url = client?.clientInfo?.resolveUrl(startPageUrl)
+        val instanceUrl = client?.clientInfo?.instanceUrl
+
+        if (url != null && instanceUrl != null) {
+            withValidAccessToken { authToken ->
+                val frontDoorUrl = OAuth2.getFrontdoorUrl(
+                    url,
+                    authToken,
+                    instanceUrl.toString(),
+                    emptyMap()
+                ).toString()
+
+                runOnUiThread {
+                    bridge.webView.loadUrl(frontDoorUrl)
+                }
+                webAppLoaded = true
+
+            }
+        }
+
     }
 
     /**
@@ -439,14 +456,17 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
          * URL. Community URL can be custom and the logic of determining which
          * URL to use is in the 'resolveUrl' method in 'ClientInfo'.
          */
+        val authToken = client?.authToken
         val clientInfo = client!!.clientInfo
-        val authToken = client!!.authToken
+        val instanceUrl = clientInfo.instanceUrl
         val isAbsUrl = BootConfig.isAbsoluteUrl(url)
-        val retURL = if (isAbsUrl) url else clientInfo.resolveUrl(url).toString()
-        return clientInfo.resolveUrl("/secur/frontdoor.jsp").toString()
-            .plus("?sid=${URLEncoder.encode(authToken, UTF_8)}")
-            .plus("&retURL=${URLEncoder.encode(retURL, UTF_8)}")
-            .plus("&display=touch")
+
+        return OAuth2.getFrontdoorUrl(
+            if (isAbsUrl) URI(url) else clientInfo.resolveUrl(url),
+            authToken,
+            instanceUrl.toString(),
+            emptyMap()
+        ).toString()
     }
 
     /**
@@ -478,6 +498,21 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
             } catch (e: AccountInfoNotFoundException) {
                 i(TAG, "restartIfUserSwitched - no user account found")
             }
+        }
+    }
+
+    private fun withValidAccessToken(block: (String) -> Unit) {
+        client?.let {
+            val request = getRequestForLimits(ApiVersionStrings.VERSION_NUMBER)
+            it.sendAsync(request, object: AsyncRequestCallback {
+                override fun onSuccess(request: RestRequest?, response: RestResponse?) {
+                    block(it.authToken)
+                }
+
+                override fun onError(exception: java.lang.Exception?) {
+
+                }
+            })
         }
     }
 }
