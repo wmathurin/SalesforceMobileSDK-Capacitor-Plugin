@@ -32,7 +32,6 @@ import android.view.KeyEvent
 import com.getcapacitor.BridgeActivity
 import com.salesforce.androidsdk.app.SalesforceSDKManager
 import com.salesforce.androidsdk.auth.HttpAccess.NoNetworkException
-import com.salesforce.androidsdk.auth.OAuth2
 import com.salesforce.androidsdk.capacitor.app.SalesforceHybridSDKManager
 import com.salesforce.androidsdk.capacitor.util.SalesforceHybridLogger.i
 import com.salesforce.androidsdk.capacitor.util.SalesforceHybridLogger.w
@@ -49,7 +48,6 @@ import com.salesforce.androidsdk.rest.RestResponse
 import com.salesforce.androidsdk.ui.SalesforceActivityDelegate
 import com.salesforce.androidsdk.ui.SalesforceActivityInterface
 import com.salesforce.androidsdk.util.AuthConfigUtil.MyDomainAuthConfig
-import java.net.URI
 
 
 class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
@@ -136,7 +134,6 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
                 i(TAG, "onResume - unauthenticated web app already loaded")
             }
         } else {
-
             // Web app never loaded
             if (!webAppLoaded) {
                 onResumeLoggedInNotLoaded()
@@ -167,28 +164,19 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
 
                 // Online
                 if (SalesforceSDKManager.getInstance().hasNetwork()) {
-                    i(TAG, "onResumeNotLoggedIn - should authenticate/online - authenticating")
+                    i(TAG, "onResumeNotLoggedIn - should authenticate and online - authenticating")
                     authenticate(/*null*/)
                 } else {
-                    w(TAG, "onResumeNotLoggedIn - should authenticate/offline - can not proceed")
+                    w(TAG, "onResumeNotLoggedIn - should authenticate and offline - can not proceed")
                     loadErrorPage()
                 }
             } else {
 
-                // Local
-                if (bootconfig.isLocal) {
-                    i(
-                        TAG,
-                        "onResumeNotLoggedIn - should not authenticate/local start page - loading web app"
-                    )
-                    loadLocalStartPage()
-                } else {
-                    w(
-                        TAG,
-                        "onResumeNotLoggedIn - should not authenticate/remote start page - loading web app"
-                    )
-                    loadRemoteStartPage(getUnauthenticatedStartPage(), false)
-                }
+                i(
+                    TAG,
+                    "onResumeNotLoggedIn - should not authenticate - loading web app"
+                )
+                loadLocalStartPage()
             }
         } catch (e: BootConfigException) {
             w(
@@ -210,35 +198,8 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
         SalesforceHybridSDKManager.instance.setupUserSyncsFromDefaultConfig()
 
         // Local
-        if (bootconfig.isLocal) {
-            i(TAG, "onResumeLoggedInNotLoaded - local start page - loading web app")
-            loadLocalStartPage()
-        } else {
-
-            // Online
-            if (SalesforceSDKManager.getInstance().hasNetwork()) {
-                i(TAG, "onResumeLoggedInNotLoaded - remote start page/online - loading web app")
-                loadRemoteStartPage(bootconfig.startPage, true)
-            } else {
-
-                // FIXME
-
-//                // Has cached version
-//                if (SalesforceWebViewClientHelper.hasCachedAppHome(this)) {
-//                    i(
-//                        TAG,
-//                        "onResumeLoggedInNotLoaded - remote start page/offline/cached - loading cached web app"
-//                    )
-//                    loadCachedStartPage()
-//                } else {
-//                    i(
-//                        TAG,
-//                        "onResumeLoggedInNotLoaded - remote start page/offline/not cached - can not proceed"
-//                    )
-//                    loadErrorPage()
-//                }
-            }
-        }
+        i(TAG, "onResumeLoggedInNotLoaded - local start page - loading web app")
+        loadLocalStartPage()
     }
 
     override fun onPause() {
@@ -253,15 +214,6 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         return delegate.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event)
-    }
-
-    /**
-     * Returns the unauthenticated start page from BootConfig.
-     *
-     * @return The unauthenticated start page
-     */
-    protected fun getUnauthenticatedStartPage(): String {
-        return bootconfig.unauthenticatedStartPage
     }
 
     fun logout(/*callbackContext: CallbackContext?*/) {
@@ -347,134 +299,12 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
     }
 
     /**
-     * If an action causes a redirect to the login page, this method will be called.
-     * It causes the session to be refreshed and reloads url through the front door.
-     *
-     * @param url the page to load once the session has been refreshed.
-     */
-    fun refresh(url: String?) {
-        i(TAG, "refresh called")
-
-        /*
-         * If client is null at this point, authentication hasn't been performed yet.
-         * We need to trigger authentication, and recreate the webview in the
-         * callback, to load the page correctly. This handles some corner cases
-         * involving hitting the back button when authentication is in progress.
-         */if (client == null) {
-            clientManager.getRestClient(
-                this
-            ) { recreate() }
-            return
-        }
-        client!!.sendAsync(
-            /*RestRequest.*/getRequestForLimits(ApiVersionStrings.VERSION_NUMBER),
-            object : AsyncRequestCallback {
-                override fun onSuccess(request: RestRequest, response: RestResponse) {
-                    i(TAG, "refresh callback - refresh succeeded")
-                    runOnUiThread { /*
-                                 * The client instance being used here needs to be refreshed, to ensure we
-                                 * use the new access token. However, if the refresh token was revoked
-                                 * when the app was in the background, we need to catch that exception
-                                 * and trigger a proper logout to reset the state of this class.
-                                 */
-                        try {
-                            this@SalesforceBridgeActivity.client =
-                                this@SalesforceBridgeActivity.clientManager.peekRestClient()
-                            if (url != null) {
-                                loadRemoteStartPage(url, true)
-                            }
-                        } catch (e: AccountInfoNotFoundException) {
-                            i(TAG, "User has been logged out.")
-                            logout(/*null*/)
-                        }
-                    }
-                }
-
-                override fun onError(exception: Exception) {
-                    w(TAG, "refresh callback - refresh failed", exception)
-
-                    // Only logout if we are NOT offline
-                    if (exception !is NoNetworkException) {
-                        logout(/*null*/)
-                    }
-                }
-            })
-    }
-
-    /**
      * Load local start page
      */
     fun loadLocalStartPage() {
         i(TAG, "loadLocalStartPage called - loading!")
-        assert(bootconfig.isLocal)
         val url = "${bridge.config.androidScheme}://${bridge.config.hostname}/${bootconfig.startPage}"
         bridge.webView.loadUrl(url)
-        webAppLoaded = true
-    }
-
-    /**
-     * Load the remote start page.
-     * @param startPageUrl The start page to load.
-     * @param loadThroughFrontDoor Whether or not to load through front-door.
-     */
-    private fun loadRemoteStartPage(startPageUrl: String, loadThroughFrontDoor: Boolean) {
-        i(TAG, "loadRemoteStartPage called - loading!")
-        assert(!bootconfig.isLocal)
-        val url = client?.clientInfo?.resolveUrl(startPageUrl)
-        val instanceUrl = client?.clientInfo?.instanceUrl
-
-        if (url != null && instanceUrl != null) {
-            withValidAccessToken { authToken ->
-                val frontDoorUrl = OAuth2.getFrontdoorUrl(
-                    url,
-                    authToken,
-                    instanceUrl.toString(),
-                    emptyMap()
-                ).toString()
-
-                runOnUiThread {
-                    bridge.webView.loadUrl(frontDoorUrl)
-                }
-                webAppLoaded = true
-
-            }
-        }
-
-    }
-
-    /**
-     * Returns the front-doored URL of a URL passed in.
-     *
-     * @param url      URL to be front-doored.
-     * @return Front-doored URL.
-     */
-    fun getFrontDoorUrl(url: String?): String {
-
-        /*
-         * We need to use the absolute URL in some cases and relative URL in some
-         * other cases, because of differences between instance URL and community
-         * URL. Community URL can be custom and the logic of determining which
-         * URL to use is in the 'resolveUrl' method in 'ClientInfo'.
-         */
-        val authToken = client?.authToken
-        val clientInfo = client!!.clientInfo
-        val instanceUrl = clientInfo.instanceUrl
-        val isAbsUrl = BootConfig.isAbsoluteUrl(url)
-
-        return OAuth2.getFrontdoorUrl(
-            if (isAbsUrl) URI(url) else clientInfo.resolveUrl(url),
-            authToken,
-            instanceUrl.toString(),
-            emptyMap()
-        ).toString()
-    }
-
-    /**
-     * Load cached start page
-     */
-    private fun loadCachedStartPage() {
-//        val url: String = SalesforceWebViewClientHelper.getAppHomeUrl(this)
-//        loadUrl(url)
         webAppLoaded = true
     }
 
@@ -498,21 +328,6 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
             } catch (e: AccountInfoNotFoundException) {
                 i(TAG, "restartIfUserSwitched - no user account found")
             }
-        }
-    }
-
-    private fun withValidAccessToken(block: (String) -> Unit) {
-        client?.let {
-            val request = getRequestForLimits(ApiVersionStrings.VERSION_NUMBER)
-            it.sendAsync(request, object: AsyncRequestCallback {
-                override fun onSuccess(request: RestRequest?, response: RestResponse?) {
-                    block(it.authToken)
-                }
-
-                override fun onError(exception: java.lang.Exception?) {
-
-                }
-            })
         }
     }
 }
