@@ -1,13 +1,22 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { SDKInfoPlugin } from './definitions';
+import type { SDKInfoPlugin, SalesforceNetworkPlugin } from './definitions';
 
-const registeredPlugin  = registerPlugin<SDKInfoPlugin>(
+const sdkInfoPluginRegistered  = registerPlugin<SDKInfoPlugin>(
   'SDKInfoPlugin',
   {
     web: () => import('./web').then(m => new m.SDKInfoPluginWeb()),
   },
 );
 
+const networkPluginRegistered  = registerPlugin<SalesforceNetworkPlugin>(
+  'SalesforceNetworkPlugin',
+  {
+    web: () => import('./web').then(m => new m.SalesforceNetworkPluginWeb()),
+  },
+);
+
+
 export * from './definitions';
-export { registeredPlugin as SDKInfoPlugin };
+export { sdkInfoPluginRegistered as SDKInfoPlugin };
+export { networkPluginRegistered as SalesforceNetworkPlugin }

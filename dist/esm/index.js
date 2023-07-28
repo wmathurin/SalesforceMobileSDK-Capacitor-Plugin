@@ -1,7 +1,11 @@
 import { registerPlugin } from '@capacitor/core';
-const registeredPlugin = registerPlugin('SDKInfoPlugin', {
+const sdkInfoPluginRegistered = registerPlugin('SDKInfoPlugin', {
     web: () => import('./web').then(m => new m.SDKInfoPluginWeb()),
 });
+const networkPluginRegistered = registerPlugin('SalesforceNetworkPlugin', {
+    web: () => import('./web').then(m => new m.SalesforceNetworkPluginWeb()),
+});
 export * from './definitions';
-export { registeredPlugin as SDKInfoPlugin };
+export { sdkInfoPluginRegistered as SDKInfoPlugin };
+export { networkPluginRegistered as SalesforceNetworkPlugin };
 //# sourceMappingURL=index.js.map

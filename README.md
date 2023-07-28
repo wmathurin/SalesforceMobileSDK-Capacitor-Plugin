@@ -13,25 +13,64 @@ npx cap sync
 
 <docgen-index>
 
-* [`echo(...)`](#echo)
+* [`getInfo()`](#getinfo)
+* [`unregisterAppFeature(...)`](#unregisterappfeature)
+* [`registerAppFeature(...)`](#registerappfeature)
+* [Interfaces](#interfaces)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### echo(...)
+### getInfo()
 
 ```typescript
-echo(options: { value: string; }) => Promise<{ value: string; }>
+getInfo() => Promise<SDKInfo>
 ```
 
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
-
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
+**Returns:** <code>Promise&lt;<a href="#sdkinfo">SDKInfo</a>&gt;</code>
 
 --------------------
+
+
+### unregisterAppFeature(...)
+
+```typescript
+unregisterAppFeature(options: { feature: string; }) => Promise<void>
+```
+
+| Param         | Type                              |
+| ------------- | --------------------------------- |
+| **`options`** | <code>{ feature: string; }</code> |
+
+--------------------
+
+
+### registerAppFeature(...)
+
+```typescript
+registerAppFeature(options: { feature: string; }) => Promise<void>
+```
+
+| Param         | Type                              |
+| ------------- | --------------------------------- |
+| **`options`** | <code>{ feature: string; }</code> |
+
+--------------------
+
+
+### Interfaces
+
+
+#### SDKInfo
+
+| Prop                        | Type                  |
+| --------------------------- | --------------------- |
+| **`sdkVersion`**            | <code>string</code>   |
+| **`appName`**               | <code>string</code>   |
+| **`appVersion`**            | <code>string</code>   |
+| **`forcePluginsAvailable`** | <code>string[]</code> |
+| **`bootConfig`**            | <code>string</code>   |
 
 </docgen-api>

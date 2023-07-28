@@ -34,20 +34,21 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.salesforce.androidsdk.app.SalesforceSDKManager
 import com.salesforce.androidsdk.capacitor.util.SalesforceHybridLogger
+import com.salesforce.androidsdk.capacitor.util.SalesforceHybridLogger.i
 
 @CapacitorPlugin(name = "SDKInfoPlugin")
 class SDKInfoPlugin : Plugin() {
 
     @PluginMethod
     fun getInfo(call: PluginCall) {
-        SalesforceHybridLogger.i(TAG, "getInfo called")
+        i(TAG, "getInfo called")
         val info = SDKInfo.getSDKInfo(context)
         call.resolve(info.toJSObject())
     }
 
     @PluginMethod
     fun registerAppFeature(call: PluginCall) {
-        SalesforceHybridLogger.i(TAG, "registerAppFeature called")
+        i(TAG, "registerAppFeature called")
         val appFeatureCode = call.getString("feature")
         if (!appFeatureCode.isNullOrEmpty()) {
             SalesforceSDKManager.getInstance().registerUsedAppFeature(appFeatureCode)
@@ -57,7 +58,7 @@ class SDKInfoPlugin : Plugin() {
 
     @PluginMethod
     fun unregisterAppFeature(call: PluginCall) {
-        SalesforceHybridLogger.i(TAG, "unregisterAppFeature called")
+        i(TAG, "unregisterAppFeature called")
         val appFeatureCode = call.getString("feature")
         if (!appFeatureCode.isNullOrEmpty()) {
             SalesforceSDKManager.getInstance().unregisterUsedAppFeature(appFeatureCode)

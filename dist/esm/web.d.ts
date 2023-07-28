@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import type { SDKInfo, SDKInfoPlugin } from './definitions';
+import type { RestRequest, RestResponse, SDKInfo, SDKInfoPlugin, SalesforceNetworkPlugin } from './definitions';
 export declare class SDKInfoPluginWeb extends WebPlugin implements SDKInfoPlugin {
     getInfo(): Promise<SDKInfo>;
     unregisterAppFeature(options: {
@@ -8,4 +8,7 @@ export declare class SDKInfoPluginWeb extends WebPlugin implements SDKInfoPlugin
     registerAppFeature(options: {
         feature: string;
     }): Promise<void>;
+}
+export declare class SalesforceNetworkPluginWeb extends WebPlugin implements SalesforceNetworkPlugin {
+    sendRequest(options: RestRequest): Promise<RestResponse>;
 }

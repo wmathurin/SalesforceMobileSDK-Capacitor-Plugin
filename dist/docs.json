@@ -1,6 +1,103 @@
 {
-  "api": null,
-  "interfaces": [],
+  "api": {
+    "name": "SDKInfoPlugin",
+    "slug": "sdkinfoplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "getInfo",
+        "signature": "() => Promise<SDKInfo>",
+        "parameters": [],
+        "returns": "Promise<SDKInfo>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "SDKInfo"
+        ],
+        "slug": "getinfo"
+      },
+      {
+        "name": "unregisterAppFeature",
+        "signature": "(options: { feature: string; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ feature: string; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "unregisterappfeature"
+      },
+      {
+        "name": "registerAppFeature",
+        "signature": "(options: { feature: string; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ feature: string; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "registerappfeature"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "SDKInfo",
+      "slug": "sdkinfo",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "sdkVersion",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "appName",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "appVersion",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "forcePluginsAvailable",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string[]"
+        },
+        {
+          "name": "bootConfig",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    }
+  ],
   "enums": [],
   "typeAliases": [],
   "pluginConfigs": []

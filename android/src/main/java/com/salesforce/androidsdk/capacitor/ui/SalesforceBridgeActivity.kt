@@ -67,7 +67,7 @@ class SalesforceBridgeActivity : BridgeActivity(), SalesforceActivityInterface {
 
     // Rest client
     private lateinit var clientManager: ClientManager
-    private var client: RestClient? = null
+    var client: RestClient? = null
 
     // Config
     private lateinit var bootconfig: BootConfig
